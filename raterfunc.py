@@ -1,4 +1,7 @@
 import pytest
+class ConsumptionException(Exception):
+    print("User not allowed to consume this")
+
 
 class User:
     def __init__(self, userid, limit = None):
@@ -22,18 +25,25 @@ class User:
         if self.can_consume(added_cons):
             self.consumption += added_cons
         else:
-            print("User not allowed to consume this")
+            raise ConsumptionException
 
 pola = User(1, 4)
 
-def test_can_consume(user: User):
-    assert pola.can_consume(10) == True
-    assert pola.can_consume(range(pola.limit)) == True
+def test_can_consume():
+    assert pola.can_consume(10) == False
+    assert pola.can_consume(2) == True
+    pola.update_consumption(3)
+    assert pola.can_consume(2) == False
 
-print(pola.check_consumption())
-pola.update_consumption(5)
-print(pola.check_consumption())
-pola.update_consumption(3)
-print(pola.check_consumption())
+matan = User(2, 10)
+
+def test_update_consumption():
+    matan.update_consumption(5)
+    assert matan.check_consumption() == 5
+    with pytest.raises(ConsumptionException):
+        matan.update_consumption(10)
+
+
+
 
 
