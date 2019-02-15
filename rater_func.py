@@ -2,39 +2,34 @@ class ConsumptionException(Exception):
     pass
 
 
-class UserCreationException(Exception):
-    pass
-
-
-users = []
+users = {}
 
 
 class User:
-    def __init__(self, userid, limit=None):
-        self.userid = userid
-        self.limit = limit
-        self.consumption = 0
-        if self.userid not in users:
-            users.append(userid)
+    def __init__(self, userid: int, limit=None):
+        if userid in users:
+            # user exists
+            self.consumption = users[userid]['consumption']
+            self.limit = users[userid]['limit']
         else:
-            raise UserCreationException("This user ID is already exist")
+            # new user
+            users[userid] = {'consumption': 0, 'limit': limit}
+            self.consumption = 0
+            self.limit = limit
+        self._userid = userid
 
-    def check_consumption(self):
-        return self.consumption
+    @property
+    def userid(self):
+        return self._userid
 
-    def set_limit(self, new_limit):
-        self.limit = new_limit
-
-    def check_limit(self):
-        return self.limit
-
-    def can_consume(self, desired_added_cons=0):
-        if self.check_limit() == None:
+    def _can_consume(self, desired_added_cons=0):
+        if not self.limit:
             return True
-        return self.check_limit() >= (self.check_consumption() + desired_added_cons)
+        return self.limit >= (self.consumption + desired_added_cons)
 
-    def update_consumption(self, added_cons):
-        if self.can_consume(added_cons):
+    def consume(self, added_cons: int):
+        if self._can_consume(added_cons):
             self.consumption += added_cons
+            users[self.userid]['consumption'] = self.consumption
         else:
             raise ConsumptionException('User not allowed to consume this')
