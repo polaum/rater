@@ -4,25 +4,26 @@ import random
 from rater_func import User, ConsumptionException
 
 def test_creating_user_same_id():
-    polala = User(2, 5)
-    assert User(2).limit == 5
-    assert User(2, 10).limit == 5
+    num = random.randint(0,10000)
+    polala = User(num, 5)
+    assert User(num).limit == 5
+    assert User(num, 10).limit == 5
 
 
 def test_can_consume():
-    pola = User(1, 4)
-    samer = User(3)
+    pola = User(random.randint(0,10000), 4)
+    samer = User(random.randint(0,10000))
     assert pola._can_consume(10) == False
     assert pola._can_consume(2) == True
-    assert samer._can_consume(random.randrange(100)) == True
+    assert samer._can_consume(random.randint(0,100)) == True
     pola.consume(3)
     assert pola._can_consume(2) == False
 
 
 def test_update_consumption():
-    matan = User(4, 10)
+    matan = User(random.randint(0,10000), 10)
     matan.consume(5)
-    assert matan.consumption == 5
+    assert matan.cons == 5
     with pytest.raises(ConsumptionException):
         matan.consume(10)
 
