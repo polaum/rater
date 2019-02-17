@@ -1,19 +1,26 @@
+from pymongo import MongoClient
+
+
 class ConsumptionException(Exception):
     pass
 
 
-users = {}
+client = MongoClient()
+
+users_db = client['users_db']
+users = users_db['users_collection']
 
 
 class User:
     def __init__(self, userid: int, limit=None):
-        if userid in users:
+        user = users.find_one({'user_id': userid})
+        if user:
             # user exists
-            self.consumption = users[userid]['consumption']
-            self.limit = users[userid]['limit']
+            self.consumption = user['consumption']
+            self.limit = user['limit']
         else:
             # new user
-            users[userid] = {'consumption': 0, 'limit': limit}
+            users.insert_one({'user_id': userid,'consumption': 0, 'limit': limit})
             self.consumption = 0
             self.limit = limit
         self._userid = userid
@@ -30,6 +37,8 @@ class User:
     def consume(self, added_cons: int):
         if self._can_consume(added_cons):
             self.consumption += added_cons
-            users[self.userid]['consumption'] = self.consumption
+            this_user = users.find_one({'user_id': self.userid})
+            this_user['consumption'] = self.consumption
+            users.save(this_user)
         else:
             raise ConsumptionException('User not allowed to consume this')
